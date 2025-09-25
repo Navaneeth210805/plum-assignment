@@ -13,17 +13,27 @@ Ensure you have these files in your repo:
 
 #### Important: libmagic Dependency Fix
 
-This project uses `python-magic` for file type detection. Railway deployment requires:
+This project uses `python-magic` for file type detection. Railway deployment options:
 
+**Option 1: Nixpacks (Recommended)**
 1. **Use `python-magic-bin` instead of `python-magic`** in `requirements.txt`
 2. **Include `nixpacks.toml`** to install system dependencies:
    ```toml
    [phases.setup]
-   nixPkgs = ["python312", "file", "tesseract"]
+   nixPkgs = ["file", "tesseract"]
+   
+   [start]
+   cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
    ```
    Note: The `file` package includes libmagic library needed by python-magic
 
-3. **Fallback handling** is implemented in the code for environments where libmagic isn't available
+**Option 2: Docker (Alternative)**
+If nixpacks fails, Railway can also use the included `Dockerfile` which installs:
+- `libmagic1` and `libmagic-dev` system packages
+- `tesseract-ocr` for OCR functionality
+- All Python dependencies from `requirements.txt`
+
+**Fallback handling** is implemented in the code for environments where libmagic isn't available
 
 ### 2. Deploy to Railway
 
