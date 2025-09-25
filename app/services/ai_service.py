@@ -13,11 +13,21 @@ class AIService:
     
     def __init__(self):
         settings = get_settings()
-        if not settings.gemini_api_key:
-            raise ValueError("GEMINI_API_KEY not found in settings")
-        genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-lite')
+        self.settings = settings
         self.temperature = settings.ai_temperature
+        self.model = None
+        
+        # Initialize AI service if API key is available
+        try:
+            if settings.gemini_api_key and settings.gemini_api_key.strip():
+                genai.configure(api_key=settings.gemini_api_key)
+                self.model = genai.GenerativeModel('gemini-2.0-flash-lite')
+                logger.info("✅ AI Service initialized successfully")
+            else:
+                logger.warning("⚠️ GEMINI_API_KEY not configured - AI features will be limited")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize AI service: {e}")
+            self.model = None
     
     def generate_patient_summary(self, tests: List[NormalizedTest]) -> PatientFriendlySummary:
         """Generate patient-friendly summary using Gemini AI"""
@@ -25,6 +35,13 @@ class AIService:
             if not tests:
                 return PatientFriendlySummary(
                     summary="No test results found to analyze.",
+                    explanations=[]
+                )
+            
+            # Check if AI model is available
+            if not self.model:
+                return PatientFriendlySummary(
+                    summary="AI service unavailable. Please configure GEMINI_API_KEY.",
                     explanations=[]
                 )
             

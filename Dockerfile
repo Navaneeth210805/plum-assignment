@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libmagic-dev \
     tesseract-ocr \
     tesseract-ocr-eng \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker layer caching
@@ -22,6 +23,9 @@ RUN pip install --upgrade pip && \
 # Copy application code
 COPY . .
 
+# Test that the application can import and start
+RUN python startup_test.py
+
 # Expose port
 EXPOSE 8000
 
@@ -29,5 +33,5 @@ EXPOSE 8000
 RUN adduser --disabled-password --gecos '' appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Command to run the application
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Command to run the application with startup validation and better logging
+CMD ["sh", "-c", "echo 'Starting Medical Report Simplifier on port ${PORT:-8000}...' && python startup_test.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info --access-log"]

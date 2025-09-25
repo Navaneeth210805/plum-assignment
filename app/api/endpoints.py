@@ -56,7 +56,20 @@ def get_mime_type(file_content: bytes, filename: str = None) -> str:
 @router.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "version": "1.0.0"}
+    import os
+    from app.core.config import get_settings
+    
+    settings = get_settings()
+    return {
+        "status": "healthy", 
+        "version": "1.0.0",
+        "environment": {
+            "python_version": f"{os.sys.version_info.major}.{os.sys.version_info.minor}",
+            "port": os.getenv("PORT", "8000"),
+            "gemini_configured": bool(settings.gemini_api_key and settings.gemini_api_key.strip()),
+            "magic_available": MAGIC_AVAILABLE
+        }
+    }
 
 
 @router.post("/process-text")
