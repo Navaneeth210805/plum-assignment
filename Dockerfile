@@ -33,5 +33,5 @@ EXPOSE 8000
 RUN adduser --disabled-password --gecos '' appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Command to run the application with startup validation and better logging
-CMD ["sh", "-c", "echo 'Starting Medical Report Simplifier on port ${PORT:-8000}...' && python startup_test.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info --access-log"]
+# Command to run the application directly with Python
+CMD ["python", "-m", "app.main"]
