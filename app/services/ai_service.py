@@ -21,7 +21,7 @@ class AIService:
         try:
             if settings.gemini_api_key and settings.gemini_api_key.strip():
                 genai.configure(api_key=settings.gemini_api_key)
-                self.model = genai.GenerativeModel('gemini-2.0-flash-lite')
+                self.model = genai.GenerativeModel('gemini-2.0-flash')
                 logger.info("✅ AI Service initialized successfully")
             else:
                 logger.warning("⚠️ GEMINI_API_KEY not configured - AI features will be limited")
