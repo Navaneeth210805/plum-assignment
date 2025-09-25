@@ -16,7 +16,7 @@ Ensure you have these files in your repo:
 This project uses `python-magic` for file type detection. Railway deployment options:
 
 **Option 1: Nixpacks (Recommended)**
-1. **Use `python-magic-bin` instead of `python-magic`** in `requirements.txt`
+1. **Use `python-magic==0.4.27`** in `requirements.txt`
 2. **Include `nixpacks.toml`** to install system dependencies:
    ```toml
    [phases.setup]
