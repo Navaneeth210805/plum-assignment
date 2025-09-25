@@ -1,7 +1,13 @@
 import logging
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from typing import Union
-import magic
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("python-magic not available, using basic file validation")
 from io import BytesIO
 from PIL import Image
 
@@ -15,6 +21,36 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 settings = get_settings()
+
+
+def get_mime_type(file_content: bytes, filename: str = None) -> str:
+    """Get MIME type with fallback when magic is not available"""
+    if MAGIC_AVAILABLE:
+        try:
+            return magic.from_buffer(file_content, mime=True)
+        except Exception:
+            pass
+    
+    # Fallback: basic extension checking
+    if filename:
+        filename_lower = filename.lower()
+        if filename_lower.endswith(('.jpg', '.jpeg')):
+            return 'image/jpeg'
+        elif filename_lower.endswith('.png'):
+            return 'image/png'
+        elif filename_lower.endswith('.gif'):
+            return 'image/gif'
+        elif filename_lower.endswith('.bmp'):
+            return 'image/bmp'
+        elif filename_lower.endswith('.tiff', '.tif'):
+            return 'image/tiff'
+    
+    # Try to validate by opening with PIL
+    try:
+        Image.open(BytesIO(file_content))
+        return 'image/unknown'  # Valid image but unknown specific type
+    except Exception:
+        return 'application/octet-stream'
 
 
 @router.get("/health")
@@ -56,7 +92,7 @@ async def process_image(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="File too large")
         
         # Validate MIME type
-        mime_type = magic.from_buffer(file_content, mime=True)
+        mime_type = get_mime_type(file_content, file.filename)
         if not mime_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="File is not a valid image")
         

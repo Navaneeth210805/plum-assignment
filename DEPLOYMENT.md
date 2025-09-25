@@ -5,10 +5,24 @@
 ### 1. Prepare Your Repository
 
 Ensure you have these files in your repo:
-- `requirements.txt` - Python dependencies
+- `requirements.txt` - Python dependencies with `python-magic-bin` instead of `python-magic`
 - `railway.json` - Railway configuration  
+- `nixpacks.toml` - System dependencies configuration (IMPORTANT for libmagic)
 - `Procfile` - Alternative start command
 - `app/main.py` - Your FastAPI application
+
+#### Important: libmagic Dependency Fix
+
+This project uses `python-magic` for file type detection. Railway deployment requires:
+
+1. **Use `python-magic-bin` instead of `python-magic`** in `requirements.txt`
+2. **Include `nixpacks.toml`** to install system dependencies:
+   ```toml
+   [phases.setup]
+   nixPkgs = ["python312", "libmagic", "file", "tesseract"]
+   ```
+
+3. **Fallback handling** is implemented in the code for environments where libmagic isn't available
 
 ### 2. Deploy to Railway
 
