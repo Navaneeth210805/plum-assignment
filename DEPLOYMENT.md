@@ -19,8 +19,9 @@ This project uses `python-magic` for file type detection. Railway deployment req
 2. **Include `nixpacks.toml`** to install system dependencies:
    ```toml
    [phases.setup]
-   nixPkgs = ["python312", "libmagic", "file", "tesseract"]
+   nixPkgs = ["python312", "file", "tesseract"]
    ```
+   Note: The `file` package includes libmagic library needed by python-magic
 
 3. **Fallback handling** is implemented in the code for environments where libmagic isn't available
 
