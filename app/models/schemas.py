@@ -48,6 +48,7 @@ class FinalOutput(BaseModel):
     tests: List[NormalizedTest]
     summary: str
     status: ProcessingStatus
+    explanations: List[str] = Field(default_factory=list)
     reason: Optional[str] = None
 
 

@@ -60,6 +60,7 @@ class ProcessingService:
             return FinalOutput(
                 tests=normalization_result.tests,
                 summary=summary.summary,
+                explanations=summary.explanations,
                 status=ProcessingStatus.OK
             )
             
@@ -112,6 +113,7 @@ class ProcessingService:
             return FinalOutput(
                 tests=normalization_result.tests,
                 summary=summary.summary,
+                explanations=summary.explanations,
                 status=ProcessingStatus.OK
             )
             
@@ -138,6 +140,15 @@ class ProcessingService:
                 "tests_raw": ocr_result.tests_raw,
                 "confidence": ocr_result.confidence
             }
+            
+            # Step 1b: OCR Error Fixing
+            if ocr_result.tests_raw:
+                fixed_tests = self.ai_service.fix_ocr_errors(ocr_result.tests_raw)
+                results["step1b_ocr_fix"] = {
+                    "tests_raw_fixed": fixed_tests,
+                    "ocr_errors_fixed": len(fixed_tests) > 0
+                }
+                ocr_result.tests_raw = fixed_tests
             
             if not ocr_result.tests_raw:
                 return results
@@ -169,6 +180,19 @@ class ProcessingService:
                 "validation_error": validation_error,
                 "validation_method": "AI semantic comparison"
             }
+            
+            # Final result in exact format as problem statement
+            if is_valid:
+                results["final_output"] = {
+                    "tests": [test.dict() for test in normalization_result.tests],
+                    "summary": summary.summary,
+                    "status": "ok"
+                }
+            else:
+                results["final_output"] = {
+                    "status": "unprocessed",
+                    "reason": f"hallucinated tests not present in input: {validation_error}"
+                }
             
             return results
             

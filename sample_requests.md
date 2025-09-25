@@ -44,9 +44,16 @@ curl -X POST "http://localhost:8000/api/v1/debug-steps" \
   }'
 
 ## 8. Debug Processing Steps - Image
-curl -X POST "http://localhost:8000/api/v1/debug-steps" \
+curl -X POST "http://localhost:8000/api/v1/debug-steps-image" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@sample_medical_report.png"
+
+## 9. Demo Problem Statement Format - Shows exact format from assignment
+curl -X POST "http://localhost:8000/api/v1/demo-problem-statement" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "CBC: Hemglobin 10.2 g/dL (Low), WBC 11,200 /uL (Hgh)"
+  }'
 
 ## Expected Success Response Format:
 ## {

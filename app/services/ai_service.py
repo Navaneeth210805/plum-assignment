@@ -16,7 +16,7 @@ class AIService:
         if not settings.gemini_api_key:
             raise ValueError("GEMINI_API_KEY not found in settings")
         genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        self.model = genai.GenerativeModel('gemini-2.0-flash-lite')
         self.temperature = settings.ai_temperature
     
     def generate_patient_summary(self, tests: List[NormalizedTest]) -> PatientFriendlySummary:
@@ -42,6 +42,11 @@ class AIService:
             
             # Parse response
             summary_data = self._parse_ai_response(response.text)
+            
+            summary = summary_data.get('summary', 'Analysis completed.')
+            explanations = summary_data.get('explanations', [])
+            print(summary)
+            print(explanations)
             
             return PatientFriendlySummary(
                 summary=summary_data.get('summary', 'Analysis completed.'),
@@ -260,26 +265,23 @@ IMPORTANT RULES:
 4. Be reassuring but factual
 5. Always recommend consulting with a healthcare provider
 6. Do NOT add any test results that aren't listed below
+7. Always give explanations for any abnormal (low/high/critical) results no matter how minor it is. But explanations should be brief (1-2 sentences each) and general.
 
 Test Results:
 {chr(10).join(test_descriptions)}
 
 Please provide:
-1. A brief summary (1-2 sentences) of the overall findings and give common explanations for any abnormal results.
+1. A brief summary (1-2 sentences) of the overall findings and give common explanations if found lows or highs in any area.
 
 Example format:
 "summary" : "Low hemoglobin and high white blood cell count."
 "explanations": [
     "Low hemoglobin may indicate anemia","High WBC can occur with infections."]
 
-Format your response as:
+Format your response as follows:
 SUMMARY: [brief overall summary]
-EXPLANATIONS:
-- [explanation for abnormal result 1]
-- [explanation for abnormal result 2]
-etc.
+EXPLANATIONS: [explanation for abnormal result 1, explanation for abnormal result 2].
 
-If all results are normal, just provide the summary and mention that results are within normal ranges.
 """
         
         return prompt
@@ -288,29 +290,33 @@ If all results are normal, just provide the summary and mention that results are
         """Parse AI response into structured data"""
         try:
             lines = response_text.strip().split('\n')
+            print(lines)
             summary = ""
             explanations = []
             
             current_section = None
             
+            # handle explanations properly as per the format
             for line in lines:
                 line = line.strip()
-                
-                if line.startswith("SUMMARY:"):
+                if "SUMMARY" in line:
                     current_section = "summary"
-                    summary = line.replace("SUMMARY:", "").strip()
-                elif line.startswith("EXPLANATIONS:"):
+                    summary = line[len("SUMMARY:"):].strip()
+                elif "EXPLANATIONS" in line:
                     current_section = "explanations"
-                elif line.startswith("- ") and current_section == "explanations":
-                    explanations.append(line[2:].strip())
-                elif current_section == "summary" and line:
-                    summary += " " + line
+                elif current_section == "explanations" and line:
+                    line = line[1:].strip()
+                    explanations.append(line)
             
             # Clean up summary
+            print(summary)
+            print(explanations)
+            explanations = [exp.strip() for exp in explanations if exp]
             summary = summary.strip()
             if not summary:
                 summary = "Test results have been analyzed."
-            
+            if not explanations:
+                explanations = ["No explanations available."]
             return {
                 'summary': summary,
                 'explanations': explanations

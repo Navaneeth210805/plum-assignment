@@ -80,18 +80,55 @@ async def process_image(file: UploadFile = File(...)):
 
 
 @router.post("/debug-steps")
-async def debug_processing_steps(text_input: TextInput = None, file: UploadFile = File(None)):
+async def debug_processing_steps(text_input: TextInput = None):
     """Debug endpoint to see step-by-step processing results"""
     try:
         if text_input and text_input.text:
             return processing_service.get_step_by_step_results(text=text_input.text)
-        elif file:
-            file_content = await file.read()
-            image = Image.open(BytesIO(file_content)).convert('RGB')
-            return processing_service.get_step_by_step_results(image=image)
         else:
-            raise HTTPException(status_code=400, detail="Provide either text or image input")
+            raise HTTPException(status_code=400, detail="Provide text input")
             
     except Exception as e:
         logger.error(f"Debug processing failed: {str(e)}")
-        raise HTTPException(status_code=500, detail="Debug processing error")
+        raise HTTPException(status_code=500, detail=f"Debug processing error: {str(e)}")
+
+
+@router.post("/debug-steps-image")
+async def debug_processing_steps_image(file: UploadFile = File(...)):
+    """Debug endpoint to see step-by-step processing results for image"""
+    try:
+        file_content = await file.read()
+        image = Image.open(BytesIO(file_content)).convert('RGB')
+        return processing_service.get_step_by_step_results(image=image)
+            
+    except Exception as e:
+        logger.error(f"Debug image processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Debug processing error: {str(e)}")
+
+
+@router.post("/demo-problem-statement")
+async def demo_problem_statement_format(text_input: TextInput):
+    """Demo endpoint showing exact format from problem statement"""
+    try:
+        result = processing_service.get_step_by_step_results(text=text_input.text)
+        
+        # Format exactly as problem statement expects
+        demo_response = {}
+        
+        if "step1_ocr" in result:
+            demo_response["step1_ocr_extraction"] = result["step1_ocr"]
+        
+        if "step2_normalization" in result:
+            demo_response["step2_normalized_tests"] = result["step2_normalization"]
+        
+        if "step3_summary" in result:
+            demo_response["step3_patient_friendly"] = result["step3_summary"]
+        
+        if "final_output" in result:
+            demo_response["step4_final_output"] = result["final_output"]
+        
+        return demo_response
+        
+    except Exception as e:
+        logger.error(f"Demo processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Demo processing error: {str(e)}")
