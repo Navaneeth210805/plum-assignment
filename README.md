@@ -2,25 +2,16 @@
 
 An AI-powered backend service that processes medical reports (text or images) and provides patient-friendly explanations. Built with FastAPI, Google Gemini AI, and Tesseract OCR to transform complex medical data into understandable information.
 
-## Table of Contents
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Setup Instructions](#-setup-instructions)
-- [Environment Configuration](#-environment-configuration)
-- [API Endpoints](#-api-endpoints)
-- [Usage Examples](#-usage-examples)
-- [Technology Stack](#-technology-stack)
-- [Testing](#-testing)
 
 ## Features
 
 - ** Multi-format Input**: Process both text and images (PNG, JPG, JPEG, BMP, TIFF)
-- **OCR Processing**: Tesseract-based text extraction with confidence scoring
-- **AI-Powered Processing**: Google Gemini AI for error correction and normalization
-- **Smart Normalization**: Standardizes medical test names, values, units, and reference ranges
+- ** OCR Processing**: Tesseract-based text extraction with confidence scoring
+- ** AI-Powered Processing**: Google Gemini AI for error correction and normalization
+- ** Smart Normalization**: Standardizes medical test names, values, units, and reference ranges
 - ** Patient-Friendly Explanations**: Simple, non-technical summaries
-- **Validation**: AI semantic validation prevents fabricated test results
-- **4-Step Pipeline**: Complete processing from raw input to final output
+- ** Validation**: AI semantic validation prevents fabricated test results
+- ** 4-Step Pipeline**: Complete processing from raw input to final output
 - ** Error Handling**: Proper validation with detailed error responses
 
 ## Architecture
