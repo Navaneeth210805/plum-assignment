@@ -1,545 +1,296 @@
-# 🏥 Medical Report Simplifier
+# Medical Report Simplifier
 
-An AI-powered backend service that processes medical reports (text or images) and provides patient-friendly explanations. Built for the SDE Intern Assignment focusing on OCR → Test Extraction → Plain-Language Explanation.
+An AI-powered backend service that processes medical reports (text or images) and provides patient-friendly explanations. Built with FastAPI, Google Gemini AI, and Tesseract OCR to transform complex medical data into understandable information.
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.68+-green.svg)](https://fastapi.tiangolo.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+## Table of Contents
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Setup Instructions](#-setup-instructions)
+- [Environment Configuration](#-environment-configuration)
+- [API Endpoints](#-api-endpoints)
+- [Usage Examples](#-usage-examples)
+- [Technology Stack](#-technology-stack)
+- [Testing](#-testing)
 
-## 🎯 Problem Statement Solution
+## Features
 
-This service implements a complete 4-step pipeline for medical report processing:
+- ** Multi-format Input**: Process both text and images (PNG, JPG, JPEG, BMP, TIFF)
+- **OCR Processing**: Tesseract-based text extraction with confidence scoring
+- **AI-Powered Processing**: Google Gemini AI for error correction and normalization
+- **Smart Normalization**: Standardizes medical test names, values, units, and reference ranges
+- ** Patient-Friendly Explanations**: Simple, non-technical summaries
+- **Validation**: AI semantic validation prevents fabricated test results
+- **4-Step Pipeline**: Complete processing from raw input to final output
+- ** Error Handling**: Proper validation with detailed error responses
 
-1. **OCR/Text Extraction** - Extract and clean medical test data
-2. **Normalization** - Standardize test names, values, units, and ranges
-3. **Patient-Friendly Summary** - Generate simple explanations
-4. **Final Output** - Return validated, normalized results
+## Architecture
 
-## ✨ Features
-
-- **🔍 Multi-format Input**: Text and image processing (PNG, JPG, PDF)
-- **📄 OCR Processing**: Tesseract-based text extraction with confidence scoring
-- **🤖 AI-Powered OCR Fixing**: Gemini AI corrects common OCR errors and typos
-- **📊 Smart Normalization**: Standardizes medical test names, values, units, and reference ranges
-- **💬 Patient-Friendly Explanations**: Simple, non-technical summaries using Gemini AI
-- **🛡️ Hallucination Prevention**: AI semantic validation prevents fabricated test results
-- **⚡ 4-Step Pipeline**: Complete processing from raw input to final output
-- **🚨 Error Handling**: Proper validation with "unprocessed" status for invalid inputs
-
-## 🏗️ Architecture
+The system follows a 4-step processing pipeline:
 
 ```
-Input (Text/Image) 
-    ↓
-Step 1: OCR/Text Extraction + AI Error Fixing
-    ↓
-Step 2: AI-Powered Normalization  
-    ↓
-Step 3: Patient-Friendly Summary Generation
-    ↓
-Step 4: AI Semantic Validation & Final Output
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Input Data    │    │  Step 1: OCR    │    │ Step 2: Normal  │    │ Step 3: Patient │
+│  (Text/Image)   │───▶│   Extraction    │───▶│   ization       │───▶│   Summary       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                                              │
+┌─────────────────┐                                                          │
+│ Step 4: Final   │◀─────────────────────────────────────────────────────────┘
+│    Output       │
+└─────────────────┘
 ```
 
-## 🚀 API Endpoints
+### Component Overview:
+- **FastAPI Application**: RESTful API with automatic documentation
+- **OCR Service**: Tesseract integration for image text extraction
+- **AI Service**: Google Gemini integration for intelligent processing
+- **Processing Service**: Main business logic coordinator
+- **Validation**: Input validation and error handling
 
-### Production Endpoints
-- `POST /api/v1/process-text` - Process text input (returns final output)
-- `POST /api/v1/process-image` - Process image input (returns final output)
-
-### Demo/Evaluation Endpoints
-- `POST /api/v1/demo-problem-statement` - Shows exact 4-step format from assignment
-- `POST /api/v1/debug-steps` - Detailed step-by-step processing for text
-- `POST /api/v1/debug-steps-image` - Detailed step-by-step processing for images
-
-### Utility
-- `GET /api/v1/health` - Health check
-
-## 🛠️ Tech Stack
-
-- **FastAPI** - Modern, fast web framework for building APIs
-- **Google Gemini AI** - Advanced language model for text processing and explanations
-- **Tesseract OCR** - Optical character recognition for image text extraction
-- **Pydantic** - Data validation and serialization
-- **Python 3.9+** - Core programming language
-- **python-multipart** - File upload handling
-- **python-magic** - File type detection
-- **Pillow** - Image processing
-
-## 📋 Setup Instructions
+## Setup Instructions
 
 ### Prerequisites
+- Python 3.9 or higher
+- Tesseract OCR installed on your system
+- Google Gemini API key
 
-1. **Python 3.9+** installed
-2. **Tesseract OCR** installed:
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get update
-   sudo apt-get install tesseract-ocr
-   
-   # macOS
-   brew install tesseract
-   
-   # Windows - Download from: https://github.com/UB-Mannheim/tesseract/wiki
-   ```
-
-3. **Google Gemini API Key**:
-   - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Create a new API key
-   - Copy the API key for configuration
-
-### Local Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/medical-report-simplifier.git
-   cd medical-report-simplifier
-   ```
-
-2. **Create virtual environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure environment**:
-   Create a `.env` file in the root directory:
-   ```bash
-   touch .env
-   ```
-   Add your Google Gemini API key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   AI_TEMPERATURE=0.3
-   VALIDATION_CONFIDENCE_THRESHOLD=0.7
-   MAX_FILE_SIZE=10485760
-   ```
-
-### Running the Application
-
-1. **Start the server**:
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-2. **Access the API**:
-   - **API Documentation**: http://localhost:8000/docs
-   - **Health Check**: http://localhost:8000/api/v1/health
-   - **Alternative docs**: http://localhost:8000/redoc
-
-## 📡 API Usage Examples
-
-### 1. Process Text Input (Production)
-
+### 1. Clone the Repository
 ```bash
-curl -X POST "http://localhost:8000/api/v1/process-text" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "CBC: Hemoglobin 10.2 g/dL (Low), WBC 11,200 /uL (High)"
-  }'
+git clone <repository-url>
+cd medical-report-simplifier
 ```
 
-### 2. Process Image Input (Production)
+### 2. Install System Dependencies
 
+#### Ubuntu/Debian:
 ```bash
-curl -X POST "http://localhost:8000/api/v1/process-image" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@medical_report.png"
+sudo apt-get update
+sudo apt-get install tesseract-ocr tesseract-ocr-eng
+sudo apt-get install libmagic1 
 ```
 
-### 3. Demo Problem Statement Format (Perfect for Evaluation)
-
+#### macOS:
 ```bash
-curl -X POST "http://localhost:8000/api/v1/demo-problem-statement" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "CBC: Hemglobin 10.2 g/dL (Low), WBC 11,200 /uL (Hgh)"
-  }'
+brew install tesseract
+brew install libmagic
 ```
 
-### 4. Debug Step-by-Step Processing
+#### Windows:
+1. Download and install [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki)
+2. Add Tesseract to your PATH
 
+### 3. Install Python Dependencies
 ```bash
-curl -X POST "http://localhost:8000/api/v1/debug-steps" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "CBC: Hemoglobin 8.5 g/dL (Low), WBC 15000 /uL (High)"
-  }'
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Expected Response Formats
+### 4. Environment Configuration
+Create a `.env` file in the project root:
+```bash
+cp .env.example .env  # If example exists, or create new file
+```
 
-#### Final Output Format (Production):
-```json
-{
-  "tests": [
-    {
-      "name": "Hemoglobin",
-      "value": 10.2,
-      "unit": "g/dL",
-      "status": "low",
-      "ref_range": {"low": 12.0, "high": 15.0}
-    },
-    {
-      "name": "WBC",
-      "value": 11200,
-      "unit": "/uL",
-      "status": "high",
-      "ref_range": {"low": 4000, "high": 11000}
-    }
-  ],
-  "summary": "Low hemoglobin and high white blood cell count.",
-  "explanations": ["Low hemoglobin may indicate anemia.", "High WBC can occur with infections."],
-  "status": "ok"
+### 5. Start the Application
+```bash
+# Development mode
+python start.py
+
+# Or using uvicorn directly
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The API will be available at `http://localhost:8000`
+
+## Environment Configuration
+
+Create a `.env` file with the following variables:
+
+```env
+# Required
+GEMINI_API_KEY=your_google_gemini_api_key_here
+
+# Optional (with defaults)
+DEBUG=True
+LOG_LEVEL=INFO
+MAX_FILE_SIZE=10485760  # 10MB in bytes
+PORT=8000
+TESSERACT_PATH=/usr/bin/tesseract  # Adjust path as needed
+```
+
+### Getting Google Gemini API Key:
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+3. Add it to your `.env` file
+
+## API Endpoints
+
+### Health Check
+- **GET** `/api/v1/health` - Check service health and configuration
+
+### Production Endpoints
+- **POST** `/api/v1/process-text` - Process medical report text
+- **POST** `/api/v1/process-image` - Process medical report image
+
+### Demo Endpoint
+- **POST** `/api/v1/demo-problem-statement` - Returns 4-step processing breakdown
+
+### Documentation
+- **GET** `/docs` - Interactive Swagger UI documentation
+- **GET** `/redoc` - ReDoc documentation
+- **GET** `/` - API information and links
+
+## Usage Examples
+
+### Processing Text Input
+
+```python
+import requests
+import json
+
+url = "http://localhost:8000/api/v1/process-text"
+data = {
+    "text": "Blood Test Results: Hemoglobin: 12.5 g/dL (normal: 12-16), Glucose: 180 mg/dL (normal: 70-100)"
 }
+
+response = requests.post(url, json=data)
+result = response.json()
+print(json.dumps(result, indent=2))
 ```
 
-#### Error Response Format:
-```json
-{
-  "status": "unprocessed",
-  "reason": "No medical tests found in input text"
-}
+### Processing Image Input
+
+```python
+import requests
+
+url = "http://localhost:8000/api/v1/process-image"
+
+with open("medical_report.jpg", "rb") as f:
+    files = {"file": ("medical_report.jpg", f, "image/jpeg")}
+    response = requests.post(url, files=files)
+    
+result = response.json()
+print(json.dumps(result, indent=2))
 ```
 
-#### 4-Step Demo Format (Problem Statement):
+## Sample Requests
+
+### 1. Health Check (cURL)
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/health" \
+  -H "accept: application/json"
+```
+
+**Response:**
 ```json
 {
-  "step1_ocr_extraction": {
-    "tests_raw": ["CBC: Hemglobin 10.2 g/dL (Low), WBC 11,200 /uL (Hgh)"],
-    "confidence": 0.95
-  },
-  "step2_normalized_tests": {
-    "tests": [...],
-    "normalization_confidence": 0.95
-  },
-  "step3_patient_friendly": {
-    "summary": "...",
-    "explanations": [...]
-  },
-  "step4_final_output": {
-    "tests": [...],
-    "summary": "...",
-    "status": "ok"
+  "status": "healthy",
+  "version": "1.0.0",
+  "environment": {
+    "python_version": "3.9",
+    "port": "8000",
+    "gemini_configured": true,
+    "magic_available": true
   }
 }
 ```
 
-## 🏗️ Architecture
+### 2. Process Text (cURL)
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/process-text" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Lab Results: Hemoglobin 11.2 g/dL (Normal: 12.0-16.0), White Blood Cell Count 8500 /uL (Normal: 4000-11000), Glucose 165 mg/dL (Normal: 70-100)"
+  }'
+```
+
+### 3. Process Image (cURL)
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/process-image" \
+  -H "accept: application/json" \
+  -F "file=@/path/to/medical_report.jpg"
+```
+
+### 4. Demo Problem Statement Format (cURL)
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/demo-problem-statement" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "CBC Report: RBC 4.2 million/uL, WBC 7800/uL, Platelets 250000/uL, Hemoglobin 13.5 g/dL"
+  }'
+```
+
+## Testing
+
+### Manual Testing Examples
+
+#### 1. Basic Health Check
+```bash
+curl -X GET "http://localhost:8000/api/v1/health"
+```
+
+#### 2. Simple Text Processing
+```bash
+curl -X POST "http://localhost:8000/api/v1/process-text" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "CBC Results: Hemoglobin 9.5 g/dL (Low), WBC 12000/uL (High)"}'
+```
+
+#### 3. Demo 4-Step Format
+```bash
+curl -X POST "http://localhost:8000/api/v1/demo-problem-statement" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "CBC: RBC 4.2 million/uL, WBC 7800/uL, Hemoglobin 13.5 g/dL"}'
+```
+
+#### 4. Error Handling Test
+```bash
+curl -X POST "http://localhost:8000/api/v1/process-text" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This is not medical data"}'
+```
+
+## Technology Stack
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Web Framework** | FastAPI 0.104+ | REST API with automatic documentation |
+| **AI/ML** | Google Gemini AI | Text processing, normalization, summarization |
+| **OCR Engine** | Tesseract OCR | Image text extraction |
+| **Data Validation** | Pydantic 2.5+ | Request/response validation |
+| **Image Processing** | Pillow (PIL) | Image format handling |
+| **File Handling** | python-multipart | File upload support |
+| **HTTP Client** | httpx | API client for testing |
+| **Testing** | pytest | Unit and integration tests |
+| **Environment** | python-dotenv | Configuration management |
+
+## Project Structure
 
 ```
 medical-report-simplifier/
-├── app/
-│   ├── main.py                    # FastAPI application entry point
-│   ├── models/
-│   │   └── schemas.py             # Pydantic models for request/response
-│   ├── services/
-│   │   ├── ocr_service.py         # OCR and text extraction
-│   │   ├── ai_normalization_service.py  # Medical test normalization
-│   │   ├── ai_service.py          # Gemini AI integration & validation
-│   │   ├── processing_service.py  # Main processing pipeline
-│   │   └── medical_data.py        # Medical reference data
+├── app/                          # Main application package
+│   ├── main.py                   # FastAPI app entry point
 │   ├── api/
-│   │   └── endpoints.py           # API route handlers
-│   └── core/
-│       ├── config.py              # Configuration management
-│       └── utils.py               # Utility functions
-├── data/
-│   └── medical_references.json   # Medical test reference data
-├── tests/
-│   ├── test_api.py               # API endpoint tests
-│   └── test_validation.py       # Validation tests
-├── requirements.txt              # Python dependencies
-├── test_validation.py           # Demo validation script
-└── README.md                    # This file
+│   │   └── endpoints.py          # API route definitions
+│   ├── core/
+│   │   └── 📄 config.py             # Configuration settings
+│   ├──  models/
+│   │   └── schemas.py            # Pydantic models
+│   └── services/
+│       ├── ai_service.py         # Gemini AI integration
+│       ├── ocr_service.py        # OCR processing
+│       └── processing_service.py # Main processing pipeline
+├──  requirements.txt              # Python dependencies
+├──  Dockerfile                    # Docker configuration
+├──  start.py                      # Development server starter
+└──  README.md                     # This documentation
 ```
-
-## 🧪 Testing
-
-### Run Built-in Tests
-```bash
-pytest tests/ -v
-```
-
-### Run Validation Demo
-```bash
-python test_validation.py
-```
-
-### Manual Testing with Postman
-Import the following collection to test all endpoints:
-- Health check
-- Text processing
-- Image processing
-- Debug endpoints
-- Demo format
-
-## 🚀 Deployment Options
-
-### 🚂 Railway Deployment (Recommended)
-
-Railway is perfect for this project because it supports both Python and automatic environment detection.
-
-#### Step 1: Prepare for Railway
-
-1. **Create railway.json** (Railway configuration):
-```json
-{
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-  }
-}
-```
-
-2. **Create Procfile** (Alternative start command):
-```
-web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
-
-3. **Update requirements.txt** to include all dependencies:
-```
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
-python-magic==0.4.27
-Pillow==10.1.0
-pytesseract==0.3.10
-google-generativeai==0.3.2
-pydantic==2.5.0
-pydantic-settings==2.1.0
-python-dotenv==1.0.0
-```
-
-#### Step 2: Deploy to Railway
-
-1. **Push to GitHub**:
-```bash
-git add .
-git commit -m "Prepare for Railway deployment"
-git push origin main
-```
-
-2. **Deploy on Railway**:
-   - Go to [railway.app](https://railway.app)
-   - Sign in with GitHub
-   - Click "New Project" → "Deploy from GitHub repo"
-   - Select your repository
-   - Railway will automatically detect it's a Python project
-
-3. **Configure Environment Variables**:
-   - In Railway dashboard, go to your project
-   - Click "Variables" tab
-   - Add:
-     ```
-     GEMINI_API_KEY=your_api_key_here
-     AI_TEMPERATURE=0.3
-     VALIDATION_CONFIDENCE_THRESHOLD=0.7
-     MAX_FILE_SIZE=10485760
-     ```
-
-4. **Custom Start Command** (if needed):
-   - In Railway dashboard, go to "Settings"
-   - Under "Deploy", set start command:
-     ```
-     uvicorn app.main:app --host 0.0.0.0 --port $PORT
-     ```
-
-#### Step 3: Access Your Deployed API
-- Railway will provide a URL like: `https://your-app-name.railway.app`
-- API docs: `https://your-app-name.railway.app/docs`
-- Health check: `https://your-app-name.railway.app/api/v1/health`
-
-### 🌐 Local Demo with ngrok
-
-For quick demo without cloud deployment:
-
-1. **Install ngrok**: https://ngrok.com/download
-2. **Start the FastAPI server**:
-   ```bash
-   uvicorn app.main:app --host 0.0.0.0 --port 8000
-   ```
-3. **Expose with ngrok**:
-   ```bash
-   ngrok http 8000
-   ```
-4. **Use the ngrok URL** for testing: `https://abc123.ngrok.io`
-
-### 🔧 Other Cloud Options
-
-- **Render**: Auto-deploy from GitHub, similar to Railway
-- **Heroku**: Use Procfile, add Tesseract buildpack
-- **DigitalOcean App Platform**: Deploy from GitHub
-- **AWS/GCP/Azure**: Container deployment with Docker
-
-## 🛡️ AI-Powered Hallucination Validation
-
-### The Problem
-Traditional validation methods use simple string matching, which can miss:
-- Fabricated test results that weren't in the original data
-- Incorrect values or units
-- Completely invented medical tests
-
-### Our Solution: AI Semantic Context Comparison
-
-We use Gemini AI to compare the **semantic context** between original text and normalized results:
-
-1. **Semantic Analysis**: AI understands the meaning of medical tests, not just keywords
-2. **Context Preservation**: Validates that normalized data represents the same medical information
-3. **Confidence Scoring**: Returns confidence levels for validation decisions
-4. **Hallucination Detection**: Identifies when AI normalization adds non-existent tests
-
-### Validation Process
-
-```python
-# 1. Compare original vs normalized semantically
-is_valid, validation_error = self.ai_service.validate_against_hallucination(
-    original_tests,    # Raw extracted text
-    normalized_tests   # AI-normalized results  
-)
-
-# 2. Return appropriate response
-if not is_valid:
-    return ErrorResponse(
-        status="unprocessed",
-        reason=f"hallucinated tests not present in input: {validation_error}"
-    )
-```
-
-## 🎬 Demo Script
-
-For your screen recording, use this sequence:
-
-```bash
-# 1. Start server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# 2. Health check  
-curl http://localhost:8000/api/v1/health
-
-# 3. Basic text processing (show final output)
-curl -X POST "http://localhost:8000/api/v1/process-text" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "CBC: Hemoglobin 10.2 g/dL (Low), WBC 11,200 /uL (High)"}'
-
-# 4. Demo 4-step format (perfect for evaluation)
-curl -X POST "http://localhost:8000/api/v1/demo-problem-statement" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "CBC: Hemglobin 10.2 g/dL (Low), WBC 11,200 /uL (Hgh)"}'
-
-# 5. Error handling (should return "unprocessed")
-curl -X POST "http://localhost:8000/api/v1/process-text" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "This is just regular text without medical data."}'
-
-# 6. Image processing (if you have a test image)
-curl -X POST "http://localhost:8000/api/v1/process-image" \
-  -F "file=@test_medical_report.png"
-```
-
-## 📊 Performance & Scalability
-
-- **Response Time**: ~2-3 seconds for text processing
-- **AI Processing**: Parallel OCR fixing and normalization
-- **File Upload**: Supports up to 10MB images
-- **Rate Limiting**: Configurable via settings
-- **Caching**: Medical reference data cached in memory
-
-## 🔒 Security Features
-
-- File type validation (magic number checking)
-- File size limits
-- Input sanitization
-- API key protection via environment variables
-- No persistent storage of medical data
-
-## 📝 Assignment Compliance
-
-This implementation fully addresses the problem statement:
-
-✅ **Step 1**: OCR/Text Extraction with confidence scoring  
-✅ **Step 2**: Normalized Tests JSON with standardized format  
-✅ **Step 3**: Patient-Friendly Summary with simple explanations  
-✅ **Step 4**: Final Output with combined results  
-✅ **Guardrail**: Error handling with "unprocessed" status  
-✅ **Bonus**: AI-powered hallucination prevention  
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make changes and test thoroughly
-4. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**Your Name**  
-SDE Intern Assignment - Medical Report Simplifier  
-Built with ❤️ using FastAPI and Google Gemini AI
-
----
-
-## 📞 Support
-
-For questions or issues:
-- 📧 Email: your.email@example.com
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/medical-report-simplifier/issues)
-- 📖 Documentation: [API Docs](https://your-app.railway.app/docs)
-
-1. **Input Comparison**: AI compares original medical text with normalized results
-2. **Semantic Analysis**: Detects context mismatches beyond simple string matching  
-3. **Confidence Scoring**: Uses confidence thresholds (>0.7) for reliability
-4. **Medical Standardization**: Allows reasonable conversions (e.g., "Hgb" → "Hemoglobin")
-5. **Fabrication Detection**: Identifies completely invented tests or wrong values
-
-### Example Scenarios
-
-✅ **Valid**: Original: `"Hgb 10.2 g/dL Low"` → Normalized: `"Hemoglobin: 10.2 g/dL (Low)"`
-
-❌ **Invalid**: Original: `"Hgb 10.2 g/dL Low"` → Normalized: `"Cholesterol: 220 mg/dL (High)"` 
-
-### Testing the Validation
-
-Run the demo script to see validation in action:
-
-```bash
-python demo_validation.py
-```
-
-Run validation-specific tests:
-
-```bash
-pytest tests/test_validation.py -v
-```
-
-## Error Handling
-
-The API includes comprehensive error handling:
-- Invalid file formats
-- OCR processing failures
-- AI service errors
-- Validation errors
-- Hallucination detection with detailed error messages
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## License
-
-MIT License

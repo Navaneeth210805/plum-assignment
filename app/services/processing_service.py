@@ -14,7 +14,6 @@ class ProcessingService:
     def process_text_input(self, text: str) -> Union[FinalOutput, ErrorResponse]:
         """Process text input (OCR cleanup + single AI call for normalization/validation/summary)."""
         try:
-            # Step 1: OCR cleaning
             ocr_result = self.ocr_service.process_text_input(text)
             if not ocr_result.tests_raw:
                 return ErrorResponse(
@@ -24,7 +23,6 @@ class ProcessingService:
 
             fixed_tests = self.ai_service.fix_ocr_errors(ocr_result.tests_raw)
 
-            # Step 2-4: Single AI call
             ai_data = self.ai_service.process_tests(fixed_tests)
 
             if not ai_data.get("validation", {}).get("is_valid", False):
