@@ -5,14 +5,14 @@ An AI-powered backend service that processes medical reports (text or images) an
 
 ## Features
 
-- ** Multi-format Input**: Process both text and images (PNG, JPG, JPEG, BMP, TIFF)
-- ** OCR Processing**: Tesseract-based text extraction with confidence scoring
-- ** AI-Powered Processing**: Google Gemini AI for error correction and normalization
-- ** Smart Normalization**: Standardizes medical test names, values, units, and reference ranges
-- ** Patient-Friendly Explanations**: Simple, non-technical summaries
-- ** Validation**: AI semantic validation prevents fabricated test results
-- ** 4-Step Pipeline**: Complete processing from raw input to final output
-- ** Error Handling**: Proper validation with detailed error responses
+- **Multi-format Input**: Process both text and images (PNG, JPG, JPEG, BMP, TIFF)
+- **OCR Processing**: Tesseract-based text extraction with confidence scoring
+- **AI-Powered Processing**: Google Gemini AI for error correction and normalization
+- **Smart Normalization**: Standardizes medical test names, values, units, and reference ranges
+- **Patient-Friendly Explanations**: Simple, non-technical summaries
+- **Validation**: AI semantic validation prevents fabricated test results
+- **4-Step Pipeline**: Complete processing from raw input to final output
+- **Error Handling**: Proper validation with detailed error responses
 
 ## Architecture
 
