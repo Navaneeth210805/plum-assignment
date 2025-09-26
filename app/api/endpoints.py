@@ -128,31 +128,31 @@ async def process_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Internal server error during image processing")
 
 
-@router.post("/debug-steps")
-async def debug_processing_steps(text_input: TextInput = None):
-    """Debug endpoint to see step-by-step processing results"""
-    try:
-        if text_input and text_input.text:
-            return processing_service.get_step_by_step_results(text=text_input.text)
-        else:
-            raise HTTPException(status_code=400, detail="Provide text input")
+# @router.post("/debug-steps")
+# async def debug_processing_steps(text_input: TextInput = None):
+#     """Debug endpoint to see step-by-step processing results"""
+#     try:
+#         if text_input and text_input.text:
+#             return processing_service.get_step_by_step_results(text=text_input.text)
+#         else:
+#             raise HTTPException(status_code=400, detail="Provide text input")
             
-    except Exception as e:
-        logger.error(f"Debug processing failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Debug processing error: {str(e)}")
+#     except Exception as e:
+#         logger.error(f"Debug processing failed: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Debug processing error: {str(e)}")
 
 
-@router.post("/debug-steps-image")
-async def debug_processing_steps_image(file: UploadFile = File(...)):
-    """Debug endpoint to see step-by-step processing results for image"""
-    try:
-        file_content = await file.read()
-        image = Image.open(BytesIO(file_content)).convert('RGB')
-        return processing_service.get_step_by_step_results(image=image)
+# @router.post("/debug-steps-image")
+# async def debug_processing_steps_image(file: UploadFile = File(...)):
+#     """Debug endpoint to see step-by-step processing results for image"""
+#     try:
+#         file_content = await file.read()
+#         image = Image.open(BytesIO(file_content)).convert('RGB')
+#         return processing_service.get_step_by_step_results(image=image)
             
-    except Exception as e:
-        logger.error(f"Debug image processing failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Debug processing error: {str(e)}")
+#     except Exception as e:
+#         logger.error(f"Debug image processing failed: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Debug processing error: {str(e)}")
 
 
 @router.post("/demo-problem-statement")
